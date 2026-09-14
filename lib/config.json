@@ -1,0 +1,30 @@
+{
+  "style": "cinematic",
+  "theme": {
+    "primary": "#d9a752",
+    "accent": "#ffd700",
+    "text": "#ffffff",
+    "textMuted": "rgba(255, 255, 255, 0.4)"
+  },
+  "backgroundEffects": {
+    "particles": true,
+    "grid": true,
+    "ambientGlow": true
+  },
+  "elements": [
+    {
+      "id": "intro-line",
+      "type": "line",
+      "startFrame": 0,
+      "endFrame": 150,
+      "x1": 10,
+      "y1": 50,
+      "x2": 90,
+      "y2": 50,
+      "stroke": "primary",
+      "strokeWidth": 2,
+      "glow": true,
+      "animateDuration": 90
+    }
+  ]
+}
