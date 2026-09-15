@@ -38,6 +38,9 @@ export async function processJob(jobId: string): Promise<void> {
       timelineJson = await generateRemotionCode(job.prompt, job.options);
       try {
         const parsed = JSON.parse(timelineJson);
+        if (job.options?.templateDesign) {
+          parsed.templateDesign = job.options.templateDesign;
+        }
         updateJob(jobId, { config: parsed, progress: 30 });
       } catch {
         updateJob(jobId, { progress: 30 });
@@ -54,13 +57,10 @@ export async function processJob(jobId: string): Promise<void> {
 
     // Copy the static template component as template.tsx and index.tsx in the directory
     const templateSourcePath = path.join(process.cwd(), 'lib', 'template.tsx');
-    const threeSceneSourcePath = path.join(process.cwd(), 'lib', 'ThreeScene.tsx');
     const entryPoint = path.join(jobDir, 'template.tsx');
     const indexDest = path.join(jobDir, 'index.tsx');
-    const threeSceneDest = path.join(jobDir, 'ThreeScene.tsx');
     await fs.copyFile(templateSourcePath, entryPoint);
     await fs.copyFile(templateSourcePath, indexDest);
-    await fs.copyFile(threeSceneSourcePath, threeSceneDest);
 
     // Write a minimal tsconfig for the bundler
     await fs.writeFile(

@@ -10,7 +10,6 @@ import {
   type DurationPreset,
   type ResolutionPreset,
   type StylePreset,
-  type AudioPreset,
 } from './config';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -26,7 +25,7 @@ export interface JobOptions {
   duration: DurationPreset;
   resolution: ResolutionPreset;
   style: StylePreset;
-  audio?: AudioPreset;
+  templateDesign?: string;
 }
 
 export interface Job {

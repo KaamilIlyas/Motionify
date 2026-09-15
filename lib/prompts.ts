@@ -48,9 +48,7 @@ Your task: Transform the user's product prompt into a high-converting, visually 
   "act3_climax": {
     "headline": string,          // Climax headline (e.g. "The Future of Development is Here")
     "badge": string              // Status tag (e.g. "NOW LIVE WORLDWIDE", "PUBLIC BETA 2.0")
-  },
-  "audioTrack": "tech-pulse" | "cinematic-ambient" | "minimal-warmth",
-  "enableSfx": true
+  }
 }
 
 ## CURATED COLOR PALETTES (CHOOSE BASED ON PRODUCT DOMAIN)
@@ -100,9 +98,7 @@ CRITICAL: The background ("bgGradient") MUST ALWAYS be pitch-black or ultra-dark
   "act3_climax": {
     "headline": "Experience the Next Era of Cloud",
     "badge": "PUBLIC BETA NOW LIVE"
-  },
-  "audioTrack": "tech-pulse",
-  "enableSfx": true
+  }
 }
 
 Generate ONLY the valid JSON matching this structure.`;

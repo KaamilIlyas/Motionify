@@ -13,12 +13,10 @@ import {
   DURATION_PRESETS,
   RESOLUTION_PRESETS,
   STYLE_PRESETS,
-  AUDIO_PRESETS,
   DEFAULT_OPTIONS,
   type DurationPreset,
   type ResolutionPreset,
   type StylePreset,
-  type AudioPreset,
 } from '@/lib/config';
 
 export const dynamic = 'force-dynamic';
@@ -28,10 +26,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { prompt, options } = body;
 
-    // ── Validate prompt ──
+    // ── Input Validation ──
     if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
       return Response.json(
-        { error: 'Prompt is required' },
+        { error: 'Prompt is required and must be a non-empty string' },
         { status: 400 }
       );
     }
@@ -59,22 +57,18 @@ export async function POST(request: NextRequest) {
         ? options.style
         : DEFAULT_OPTIONS.style;
 
-    const audio: AudioPreset =
-      options?.audio && options.audio in AUDIO_PRESETS
-        ? options.audio
-        : DEFAULT_OPTIONS.audio;
-
     // ── Create job ──
     const jobId = uuidv4();
-    const jobOptions = { duration, resolution, style, audio };
+    const templateDesign = options?.templateDesign;
+    const jobOptions = { duration, resolution, style, templateDesign };
     createJob(jobId, prompt.trim(), jobOptions);
 
     let parsedConfig: any = null;
     try {
       const timelineJson = await generateRemotionCode(prompt.trim(), jobOptions);
       parsedConfig = JSON.parse(timelineJson);
-      if (audio && audio !== 'auto') {
-        parsedConfig.audioTrack = audio;
+      if (templateDesign) {
+        parsedConfig.templateDesign = templateDesign;
       }
       updateJob(jobId, { config: parsedConfig, progress: 30 });
     } catch (aiErr) {

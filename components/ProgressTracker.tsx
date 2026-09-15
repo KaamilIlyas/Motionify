@@ -12,7 +12,7 @@ interface Step {
 const STEPS: Step[] = [
   { key: 'generating', num: '01', label: 'Story & Copy Synthesis', detail: 'Designing 3-act narrative & brand identity' },
   { key: 'rendering', num: '02', label: 'Remotion Engine Render', detail: 'Executing 3D perspective, shaders & typography' },
-  { key: 'completed', num: '03', label: 'Master Output Ready', detail: 'H.264 1080p 60fps with synchronized audio' },
+  { key: 'completed', num: '03', label: 'Master Output Ready', detail: 'H.264 1080p 60fps high-definition render' },
 ];
 
 interface ProgressTrackerProps {

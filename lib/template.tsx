@@ -75,6 +75,7 @@ export interface Act3Climax {
 
 export interface VideoConfig {
   style?: 'cinematic' | 'minimal' | 'corporate';
+  templateDesign?: 'saas-window' | 'kinetic-punch' | 'mobile-showcase' | 'fintech-grid';
   audioTrack?: string;
   enableSfx?: boolean;
   theme?: Theme;
@@ -217,8 +218,9 @@ const Act1HookView: React.FC<{
   actEnd: number;
 }> = ({ hook, brand, actEnd }) => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const { fps, width, height } = useVideoConfig();
   const { theme } = useVideoConfigContext();
+  const isPortrait = height > width;
 
   if (frame > actEnd) return null;
 
@@ -258,7 +260,7 @@ const Act1HookView: React.FC<{
         alignItems: 'center',
         justifyContent: 'center',
         textAlign: 'center',
-        padding: '0 80px',
+        padding: isPortrait ? '0 40px' : '0 80px',
         opacity: exitOpacity,
         transform: `translateY(${exitSlide}px)`,
       }}
@@ -309,11 +311,11 @@ const Act1HookView: React.FC<{
       <h1
         style={{
           fontFamily: '"Space Grotesk", sans-serif',
-          fontSize: 72,
+          fontSize: isPortrait ? 48 : 72,
           fontWeight: 800,
           lineHeight: 1.15,
           letterSpacing: '-1.5px',
-          maxWidth: 1100,
+          maxWidth: isPortrait ? 840 : 1100,
           margin: 0,
           background: `linear-gradient(135deg, #ffffff 45%, ${theme.primary} 90%, ${theme.accent} 100%)`,
           WebkitBackgroundClip: 'text',
@@ -331,10 +333,10 @@ const Act1HookView: React.FC<{
         <p
           style={{
             fontFamily: '"Space Grotesk", sans-serif',
-            fontSize: 24,
+            fontSize: isPortrait ? 18 : 24,
             fontWeight: 400,
             lineHeight: 1.5,
-            maxWidth: 750,
+            maxWidth: isPortrait ? 700 : 750,
             color: theme.textMuted,
             marginTop: 24,
             transform: `translateY(${(1 - Math.max(0, springSub)) * 20}px)`,
@@ -357,7 +359,8 @@ const Act2ProductView: React.FC<{
   actEnd: number;
 }> = ({ product, brand, actStart, actEnd }) => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const { fps, width, height } = useVideoConfig();
+  const isPortrait = height > width;
   const { theme } = useVideoConfigContext();
 
   if (frame < actStart || frame > actEnd) return null;
@@ -381,8 +384,8 @@ const Act2ProductView: React.FC<{
   });
 
   // Dynamic 3D Perspective breathing
-  const tiltX = 5 + Math.sin(actFrame * 0.035) * 1.5;
-  const tiltY = -7 + Math.cos(actFrame * 0.04) * 2.0;
+  const tiltX = (isPortrait ? 3 : 5) + Math.sin(actFrame * 0.035) * 1.5;
+  const tiltY = (isPortrait ? -4 : -7) + Math.cos(actFrame * 0.04) * 2.0;
 
   // Metric counter animation
   const counterProgress = interpolate(actFrame, [15, 60], [0, 1], {
@@ -390,6 +393,8 @@ const Act2ProductView: React.FC<{
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
   });
+
+  const windowWidth = isPortrait ? Math.min(860, width - 80) : 1040;
 
   return (
     <AbsoluteFill
@@ -400,18 +405,20 @@ const Act2ProductView: React.FC<{
         perspective: 1600,
         opacity: exitOpacity,
         pointerEvents: 'none',
+        padding: isPortrait ? '0 36px' : '0 80px',
       }}
     >
       <div
         style={{
-          width: 1040,
+          width: windowWidth,
+          maxWidth: '100%',
           background: 'linear-gradient(135deg, rgba(22, 20, 34, 0.88), rgba(10, 8, 18, 0.94))',
           borderRadius: 22,
           border: '1px solid rgba(255, 255, 255, 0.12)',
           boxShadow: `0 35px 100px -15px ${theme.primary}35, 0 20px 50px rgba(0,0,0,0.85), inset 0 1px 1px rgba(255,255,255,0.2)`,
           backdropFilter: 'blur(28px)',
           overflow: 'hidden',
-          transform: `scale(${Math.max(0.7, springWindow) * exitScale}) rotateX(${tiltX}deg) rotateY(${tiltY}deg)`,
+          transform: `scale(${Math.max(0.7, springWindow) * exitScale * (isPortrait ? 0.95 : 1)}) rotateX(${tiltX}deg) rotateY(${tiltY}deg)`,
           transformOrigin: 'center center',
         }}
       >
@@ -421,7 +428,7 @@ const Act2ProductView: React.FC<{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            padding: '16px 24px',
+            padding: isPortrait ? '14px 18px' : '16px 24px',
             borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
             background: 'rgba(255, 255, 255, 0.03)',
           }}
@@ -446,10 +453,16 @@ const Act2ProductView: React.FC<{
               fontFamily: '"Space Grotesk", sans-serif',
               fontSize: 13,
               color: theme.textMuted,
+              maxWidth: isPortrait ? 260 : undefined,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
             }}
           >
             <span style={{ fontSize: 11, color: theme.primary }}>🔒</span>
-            <span>https://{brand?.ctaUrl || 'app.cloud/dashboard'}</span>
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              https://{brand?.ctaUrl || 'app.cloud/dashboard'}
+            </span>
           </div>
 
           {/* Right Status Badge */}
@@ -470,13 +483,20 @@ const Act2ProductView: React.FC<{
         </div>
 
         {/* Window Content Area */}
-        <div style={{ padding: '36px 36px 32px' }}>
+        <div style={{ padding: isPortrait ? '24px 24px 20px' : '36px 36px 32px' }}>
           {/* Top Row: Metric Highlight & Features */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 28, marginBottom: 24 }}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: isPortrait ? '1fr' : '1.2fr 1fr',
+              gap: isPortrait ? 18 : 28,
+              marginBottom: isPortrait ? 16 : 24,
+            }}
+          >
             {/* Left: Hero Metric Card */}
             <div
               style={{
-                padding: '28px',
+                padding: isPortrait ? '20px 24px' : '28px',
                 borderRadius: 18,
                 background: 'rgba(255, 255, 255, 0.035)',
                 border: `1px solid ${theme.primary}30`,
@@ -490,12 +510,12 @@ const Act2ProductView: React.FC<{
                 <div
                   style={{
                     fontFamily: '"Space Grotesk", sans-serif',
-                    fontSize: 13,
+                    fontSize: 12,
                     fontWeight: 700,
                     letterSpacing: '1.5px',
                     color: theme.primary,
                     textTransform: 'uppercase',
-                    marginBottom: 10,
+                    marginBottom: 8,
                   }}
                 >
                   {product.metric?.label || 'DEPLOYMENT VELOCITY'}
@@ -503,7 +523,7 @@ const Act2ProductView: React.FC<{
                 <div
                   style={{
                     fontFamily: '"Space Grotesk", sans-serif',
-                    fontSize: 64,
+                    fontSize: isPortrait ? 52 : 64,
                     fontWeight: 800,
                     letterSpacing: '-2px',
                     color: '#ffffff',
@@ -515,8 +535,8 @@ const Act2ProductView: React.FC<{
               </div>
 
               {/* Mini Sparkline Graph */}
-              <div style={{ marginTop: 20 }}>
-                <svg width="100%" height="45" viewBox="0 0 300 45" fill="none">
+              <div style={{ marginTop: isPortrait ? 12 : 20 }}>
+                <svg width="100%" height={isPortrait ? '36' : '45'} viewBox="0 0 300 45" fill="none">
                   <path
                     d="M 0 38 Q 60 30, 120 22 T 240 10 T 300 4"
                     stroke={theme.primary}
@@ -541,10 +561,10 @@ const Act2ProductView: React.FC<{
                   <div
                     style={{
                       fontFamily: '"Space Grotesk", sans-serif',
-                      fontSize: 13,
+                      fontSize: 12,
                       fontWeight: 600,
                       color: '#34d399',
-                      marginTop: 6,
+                      marginTop: 4,
                     }}
                   >
                     ↑ {product.metric.change}
@@ -554,7 +574,7 @@ const Act2ProductView: React.FC<{
             </div>
 
             {/* Right: 3 Animated Feature Highlights */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, justifyContent: 'center' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: isPortrait ? 8 : 12, justifyContent: 'center' }}>
               {(product.features || ['Instant Edge Sync', 'Sub-Millisecond Engine', 'Autonomous Failover']).map(
                 (feat, idx) => {
                   const featSpring = spring({
@@ -569,8 +589,8 @@ const Act2ProductView: React.FC<{
                       style={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: 14,
-                        padding: '16px 20px',
+                        gap: 12,
+                        padding: isPortrait ? '12px 16px' : '16px 20px',
                         borderRadius: 14,
                         background: 'rgba(255, 255, 255, 0.04)',
                         border: '1px solid rgba(255, 255, 255, 0.08)',
@@ -580,17 +600,18 @@ const Act2ProductView: React.FC<{
                     >
                       <div
                         style={{
-                          width: 28,
-                          height: 28,
-                          borderRadius: 8,
+                          width: 24,
+                          height: 24,
+                          borderRadius: 6,
                           background: `${theme.primary}25`,
                           border: `1px solid ${theme.primary}60`,
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
                           color: theme.primary,
-                          fontSize: 14,
+                          fontSize: 12,
                           fontWeight: 800,
+                          flexShrink: 0,
                         }}
                       >
                         ✓
@@ -598,9 +619,12 @@ const Act2ProductView: React.FC<{
                       <span
                         style={{
                           fontFamily: '"Space Grotesk", sans-serif',
-                          fontSize: 16,
+                          fontSize: isPortrait ? 14 : 16,
                           fontWeight: 600,
                           color: '#ffffff',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
                         }}
                       >
                         {feat}
@@ -616,23 +640,23 @@ const Act2ProductView: React.FC<{
           {product.codeSnippet && (
             <div
               style={{
-                padding: '14px 20px',
+                padding: isPortrait ? '10px 16px' : '14px 20px',
                 borderRadius: 12,
                 background: 'rgba(0, 0, 0, 0.45)',
                 border: '1px solid rgba(255, 255, 255, 0.06)',
                 fontFamily: 'monospace',
-                fontSize: 13,
+                fontSize: isPortrait ? 11 : 13,
                 color: theme.textMuted,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
               }}
             >
-              <div>
+              <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginRight: 10 }}>
                 <span style={{ color: theme.primary }}>$ </span>
                 <span style={{ color: '#ffffff' }}>{product.codeSnippet.split('\n')[0]}</span>
               </div>
-              <div style={{ fontSize: 11, color: '#34d399' }}>✓ OK</div>
+              <div style={{ fontSize: 11, color: '#34d399', flexShrink: 0 }}>✓ OK</div>
             </div>
           )}
         </div>
@@ -649,7 +673,8 @@ const Act3ClimaxView: React.FC<{
   actStart: number;
 }> = ({ brand, climax, actStart }) => {
   const frame = useCurrentFrame();
-  const { fps, durationInFrames } = useVideoConfig();
+  const { fps, durationInFrames, width, height } = useVideoConfig();
+  const isPortrait = height > width;
   const { theme } = useVideoConfigContext();
 
   if (frame < actStart) return null;
@@ -687,7 +712,7 @@ const Act3ClimaxView: React.FC<{
         alignItems: 'center',
         justifyContent: 'center',
         textAlign: 'center',
-        padding: '0 80px',
+        padding: isPortrait ? '0 36px' : '0 80px',
         transform: `scale(${cameraZoom})`,
       }}
     >
@@ -697,12 +722,12 @@ const Act3ClimaxView: React.FC<{
           display: 'inline-flex',
           alignItems: 'center',
           gap: 10,
-          padding: '8px 22px',
+          padding: isPortrait ? '6px 18px' : '8px 22px',
           borderRadius: 100,
           background: 'rgba(255, 255, 255, 0.05)',
           border: `1px solid ${theme.primary}50`,
           backdropFilter: 'blur(12px)',
-          marginBottom: 32,
+          marginBottom: isPortrait ? 24 : 32,
           boxShadow: `0 0 25px ${theme.primary}30`,
           transform: `scale(${Math.max(0, springBadge)})`,
           opacity: Math.min(1, springBadge),
@@ -720,7 +745,7 @@ const Act3ClimaxView: React.FC<{
         <span
           style={{
             fontFamily: '"Space Grotesk", sans-serif',
-            fontSize: 14,
+            fontSize: isPortrait ? 12 : 14,
             fontWeight: 700,
             letterSpacing: '2.5px',
             color: '#ffffff',
@@ -735,10 +760,11 @@ const Act3ClimaxView: React.FC<{
       <h1
         style={{
           fontFamily: '"Space Grotesk", sans-serif',
-          fontSize: 108,
+          fontSize: isPortrait ? 68 : 108,
           fontWeight: 900,
           letterSpacing: '-2px',
-          margin: '0 0 20px 0',
+          margin: isPortrait ? '0 0 14px 0' : '0 0 20px 0',
+          maxWidth: isPortrait ? 880 : 1200,
           background: `linear-gradient(135deg, #ffffff 40%, ${theme.primary} 90%, ${theme.accent} 100%)`,
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
@@ -755,13 +781,13 @@ const Act3ClimaxView: React.FC<{
         <p
           style={{
             fontFamily: '"Space Grotesk", sans-serif',
-            fontSize: 26,
+            fontSize: isPortrait ? 20 : 26,
             fontWeight: 500,
             lineHeight: 1.4,
-            maxWidth: 780,
+            maxWidth: isPortrait ? 760 : 780,
             color: 'rgba(255, 255, 255, 0.82)',
             textShadow: '0 2px 12px rgba(0,0,0,0.6)',
-            margin: '0 0 44px 0',
+            margin: isPortrait ? '0 0 32px 0' : '0 0 44px 0',
             opacity: Math.min(1, springTitle),
           }}
         >
@@ -782,12 +808,12 @@ const Act3ClimaxView: React.FC<{
       >
         <div
           style={{
-            padding: '18px 44px',
+            padding: isPortrait ? '15px 36px' : '18px 44px',
             borderRadius: 100,
             background: `linear-gradient(135deg, ${theme.primary}, ${theme.accent})`,
             color: '#ffffff',
             fontFamily: '"Space Grotesk", sans-serif',
-            fontSize: 18,
+            fontSize: isPortrait ? 16 : 18,
             fontWeight: 700,
             letterSpacing: '0.5px',
             boxShadow: `0 15px 40px -10px ${theme.primary}80, inset 0 1px 1px rgba(255,255,255,0.4)`,
@@ -800,7 +826,7 @@ const Act3ClimaxView: React.FC<{
           <span
             style={{
               fontFamily: 'monospace',
-              fontSize: 14,
+              fontSize: isPortrait ? 12 : 14,
               color: 'rgba(255, 255, 255, 0.60)',
               letterSpacing: '1.5px',
               textShadow: '0 1px 4px rgba(0,0,0,0.5)',
@@ -814,66 +840,429 @@ const Act3ClimaxView: React.FC<{
   );
 };
 
-// ─── Sound Design Engine ────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+// ARCHETYPE 2: Kinetic Typographic Punch (Apple Keynote / Speed Promo)
+// ══════════════════════════════════════════════════════════════════════════════
 
-const SoundDesignLayer: React.FC<{
+const KineticPunchPresentation: React.FC<{
+  hook: Act1Hook;
+  product: Act2Product;
+  climax: Act3Climax;
+  brand?: BrandConfig;
+  act1End: number;
   act2Start: number;
+  act2End: number;
   act3Start: number;
   maxEndFrame: number;
-}> = ({ act2Start, act3Start, maxEndFrame }) => {
-  const { config, stylePreset } = useVideoConfigContext();
-  const isSfxEnabled = config.enableSfx !== false && stylePreset !== 'minimal';
+  theme: Theme;
+}> = ({ hook, product, climax, brand, act1End, act2Start, act2End, act3Start, theme }) => {
+  const frame = useCurrentFrame();
+  const { fps, width, height } = useVideoConfig();
+  const isPortrait = height > width;
 
-  const resolvedAudioTrack =
-    config.audioTrack === 'none'
-      ? null
-      : config.audioTrack ||
-        (stylePreset === 'corporate'
-          ? 'tech-pulse'
-          : stylePreset === 'minimal'
-            ? 'minimal-warmth'
-            : 'tech-pulse');
+  // ACT 1: Kinetic Rapid Text Flash & Hook
+  if (frame <= act1End) {
+    const isFlashPhase = frame < 36;
+    const flashWord = frame < 18 ? 'EXECUTE.' : 'ZERO FRICTION.';
+    const springWord = spring({ frame: frame % 18, fps, config: { mass: 0.4, stiffness: 240, damping: 14 } });
+    const springHook = spring({ frame: frame - 38, fps, config: { mass: 0.6, stiffness: 120, damping: 14 } });
+    const laserX = interpolate(frame, [0, act1End], [-100, 200], { extrapolateRight: 'clamp' });
 
-  // Key visual impact and whoosh cues
-  const impactFrames = [12, act2Start + 8, act3Start + 10];
-  const whooshFrames = [act2Start + 22, act2Start + 38, act2Start + 54];
+    return (
+      <AbsoluteFill style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: isPortrait ? '0 36px' : '0 80px' }}>
+        <div style={{ position: 'absolute', top: '50%', left: `${laserX}%`, width: 320, height: 2, background: `linear-gradient(90deg, transparent, ${theme.primary}, transparent)`, boxShadow: `0 0 25px ${theme.primary}`, transform: 'translateY(-50%)' }} />
 
-  return (
-    <>
-      {resolvedAudioTrack && (
-        <Audio
-          src={staticFile(`audio/${resolvedAudioTrack}.wav`)}
-          volume={(f) =>
-            interpolate(
-              f,
-              [0, 25, Math.max(30, maxEndFrame - 30), maxEndFrame],
-              [0, 0.75, 0.75, 0],
-              {
-                extrapolateLeft: 'clamp',
-                extrapolateRight: 'clamp',
-              }
-            )
-          }
-        />
-      )}
+        {isFlashPhase ? (
+          <h1 style={{ fontFamily: '"Space Grotesk", sans-serif', fontSize: isPortrait ? 78 : 104, fontWeight: 900, letterSpacing: '-3px', color: '#ffffff', textTransform: 'uppercase', transform: `scale(${Math.max(0.7, springWord)})`, textShadow: `0 0 40px ${theme.primary}` }}>
+            {flashWord}
+          </h1>
+        ) : (
+          <div style={{ opacity: Math.min(1, springHook), transform: `translateY(${(1 - Math.max(0, springHook)) * 30}px)` }}>
+            <div style={{ display: 'inline-flex', padding: isPortrait ? '6px 16px' : '6px 18px', borderRadius: 100, background: 'rgba(255,255,255,0.06)', border: `1px solid ${theme.primary}50`, color: theme.primary, fontSize: isPortrait ? 12 : 13, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: isPortrait ? 20 : 24 }}>
+              {brand?.categoryBadge || '// HIGH-VELOCITY RUNTIME'}
+            </div>
+            <h1 style={{ fontFamily: '"Space Grotesk", sans-serif', fontSize: isPortrait ? 58 : 72, fontWeight: 900, letterSpacing: '-2px', color: '#ffffff', lineHeight: 1.15, maxWidth: isPortrait ? 900 : 1050, margin: '0 auto', filter: 'drop-shadow(0 4px 20px rgba(0,0,0,0.8))' }}>
+              {hook.headline}
+            </h1>
+          </div>
+        )}
+      </AbsoluteFill>
+    );
+  }
 
-      {isSfxEnabled && (
-        <>
-          {impactFrames.map((f, idx) => (
-            <Sequence key={`impact-${idx}`} from={f} durationInFrames={36}>
-              <Audio src={staticFile('audio/sfx-impact.wav')} volume={0.35} />
-            </Sequence>
-          ))}
-          {whooshFrames.map((f, idx) => (
-            <Sequence key={`whoosh-${idx}`} from={f} durationInFrames={25}>
-              <Audio src={staticFile('audio/sfx-whoosh.wav')} volume={0.25} />
-            </Sequence>
-          ))}
-        </>
-      )}
-    </>
-  );
+  // ACT 2: Split-Screen Holographic Radar & High-Speed Metric Cards
+  if (frame >= act2Start && frame <= act2End) {
+    const actFrame = frame - act2Start;
+    const springCard = spring({ frame: actFrame, fps, config: { mass: 0.7, stiffness: 100, damping: 14 } });
+    const pulseRadar = Math.sin(actFrame * 0.12) * 0.15 + 1;
+    const progressWidth = interpolate(actFrame, [10, 60], [0, 100], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+    const radarSize = isPortrait ? 180 : 220;
+
+    return (
+      <AbsoluteFill style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: isPortrait ? '0 36px' : '0 80px' }}>
+        <div style={{ width: isPortrait ? Math.min(880, width - 60) : 1120, maxWidth: '100%', display: 'flex', flexDirection: isPortrait ? 'column' : 'row', alignItems: 'center', justifyContent: 'center', gap: isPortrait ? 24 : 36, opacity: Math.min(1, springCard), transform: `scale(${Math.max(0.85, springCard)})` }}>
+          {/* Left: Holographic Radar Core */}
+          <div style={{ width: isPortrait ? '100%' : 'auto', maxWidth: isPortrait ? 720 : undefined, flex: isPortrait ? 'none' : 1, padding: isPortrait ? '26px 28px' : 40, borderRadius: 24, background: 'rgba(12, 10, 20, 0.85)', border: `1px solid ${theme.primary}40`, boxShadow: `0 20px 60px ${theme.primary}20, inset 0 1px 1px rgba(255,255,255,0.1)`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ position: 'relative', width: radarSize, height: radarSize, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ position: 'absolute', width: radarSize, height: radarSize, borderRadius: '50%', border: `1px dashed ${theme.primary}60`, transform: `scale(${pulseRadar})` }} />
+              <div style={{ position: 'absolute', width: isPortrait ? 130 : 160, height: isPortrait ? 130 : 160, borderRadius: '50%', border: `1px solid ${theme.accent}70` }} />
+              <div style={{ position: 'absolute', width: isPortrait ? 85 : 100, height: isPortrait ? 85 : 100, borderRadius: '50%', background: `radial-gradient(circle, ${theme.primary}40 0%, transparent 70%)` }} />
+              <span style={{ fontFamily: 'monospace', fontSize: isPortrait ? 24 : 28, fontWeight: 900, color: '#ffffff', textShadow: `0 0 15px ${theme.primary}` }}>⚡ 0ms</span>
+            </div>
+            <div style={{ marginTop: isPortrait ? 16 : 24, fontFamily: 'monospace', fontSize: isPortrait ? 12 : 12, letterSpacing: '2px', color: '#34d399', textTransform: 'uppercase' }}>
+              ● CORE ENGINE // ACTIVE
+            </div>
+          </div>
+
+          {/* Right: Stacked Telemetry Metric Cards */}
+          <div style={{ width: isPortrait ? '100%' : 'auto', maxWidth: isPortrait ? 720 : undefined, flex: isPortrait ? 'none' : 1.3, display: 'flex', flexDirection: 'column', gap: isPortrait ? 14 : 16, justifyContent: 'center' }}>
+            <div style={{ padding: isPortrait ? '26px 30px' : '32px 36px', borderRadius: 20, background: 'rgba(18, 16, 28, 0.9)', border: '1px solid rgba(255,255,255,0.12)', boxShadow: '0 20px 50px rgba(0,0,0,0.8)' }}>
+              <div style={{ fontSize: isPortrait ? 12 : 13, fontFamily: 'monospace', color: theme.primary, letterSpacing: '2px', fontWeight: 700, marginBottom: 8 }}>
+                // VELOCITY BENCHMARK
+              </div>
+              <div style={{ fontSize: isPortrait ? 58 : 68, fontWeight: 900, letterSpacing: '-2px', color: '#ffffff', lineHeight: 1, marginBottom: isPortrait ? 12 : 16 }}>
+                {product.metric?.value || '< 14ms'}
+              </div>
+              <div style={{ width: '100%', height: 6, borderRadius: 100, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+                <div style={{ width: `${progressWidth}%`, height: '100%', background: `linear-gradient(90deg, ${theme.primary}, ${theme.accent})`, borderRadius: 100, boxShadow: `0 0 10px ${theme.primary}` }} />
+              </div>
+              <div style={{ marginTop: 10, fontSize: isPortrait ? 12 : 13, color: 'rgba(255,255,255,0.65)', fontWeight: 500 }}>
+                ↑ {product.metric?.change || 'instant throughput'}
+              </div>
+            </div>
+
+            {/* Feature Pills */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: isPortrait ? 10 : 12 }}>
+              {(product.features || ['Sub-Millisecond Execution', 'Zero Latency Failover']).slice(0, 2).map((feat, idx) => (
+                <div key={idx} style={{ padding: isPortrait ? '12px 16px' : '14px 18px', borderRadius: 14, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#ffffff', fontSize: isPortrait ? 13 : 13, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{ color: theme.primary, flexShrink: 0 }}>✓</span>
+                  <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{feat}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </AbsoluteFill>
+    );
+  }
+
+  // ACT 3: Shockwave Climax & Bold CTA
+  if (frame >= act3Start) {
+    const actFrame = frame - act3Start;
+    const springTitle = spring({ frame: actFrame, fps, config: { mass: 0.6, stiffness: 120, damping: 13 } });
+    const springCta = spring({ frame: actFrame - 12, fps, config: { mass: 0.5, stiffness: 130, damping: 13 } });
+    const shockwave = interpolate(actFrame, [0, 40], [0.8, 2.2], { extrapolateRight: 'clamp' });
+    const shockOpacity = interpolate(actFrame, [0, 40], [0.8, 0], { extrapolateRight: 'clamp' });
+
+    return (
+      <AbsoluteFill style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: isPortrait ? '0 36px' : '0 80px', position: 'relative' }}>
+        <div style={{ position: 'absolute', width: isPortrait ? 320 : 400, height: isPortrait ? 320 : 400, borderRadius: '50%', border: `2px solid ${theme.primary}`, transform: `scale(${shockwave})`, opacity: shockOpacity, pointerEvents: 'none' }} />
+
+        <div style={{ display: 'inline-flex', padding: isPortrait ? '6px 18px' : '6px 18px', borderRadius: 100, background: 'rgba(255,255,255,0.06)', border: `1px solid ${theme.primary}50`, color: '#ffffff', fontSize: isPortrait ? 12 : 12, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: isPortrait ? 20 : 24 }}>
+          {climax.badge || 'NOW LIVE WORLDWIDE'}
+        </div>
+
+        <h1 style={{ fontFamily: '"Space Grotesk", sans-serif', fontSize: isPortrait ? 84 : 108, fontWeight: 900, letterSpacing: '-3px', color: '#ffffff', margin: isPortrait ? '0 0 16px 0' : '0 0 20px 0', maxWidth: isPortrait ? 900 : 1200, textShadow: `0 0 60px ${theme.primary}80`, transform: `scale(${Math.max(0.8, springTitle)})` }}>
+          {brand?.name || 'HYPERFLOW'}
+        </h1>
+
+        <p style={{ fontFamily: '"Space Grotesk", sans-serif', fontSize: isPortrait ? 24 : 26, fontWeight: 500, color: 'rgba(255, 255, 255, 0.82)', maxWidth: isPortrait ? 780 : 740, margin: isPortrait ? '0 0 32px 0' : '0 0 40px 0', textShadow: '0 2px 10px rgba(0,0,0,0.6)' }}>
+          {brand?.tagline}
+        </p>
+
+        <div style={{ transform: `translateY(${(1 - Math.max(0, springCta)) * 20}px)`, opacity: Math.min(1, springCta), display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+          <div style={{ padding: isPortrait ? '18px 44px' : '18px 48px', borderRadius: 100, background: `linear-gradient(135deg, ${theme.primary}, ${theme.accent})`, color: '#ffffff', fontSize: isPortrait ? 17 : 18, fontWeight: 800, letterSpacing: '0.5px', boxShadow: `0 15px 40px ${theme.primary}60` }}>
+            {brand?.ctaText || 'Deploy High-Velocity →'}
+          </div>
+          {brand?.ctaUrl && <span style={{ fontFamily: 'monospace', fontSize: isPortrait ? 13 : 14, color: 'rgba(255,255,255,0.6)' }}>{brand.ctaUrl}</span>}
+        </div>
+      </AbsoluteFill>
+    );
+  }
+
+  return null;
 };
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ARCHETYPE 3: Minimalist Mobile App Showcase (iOS / Framer Product)
+// ══════════════════════════════════════════════════════════════════════════════
+
+const MobileShowcasePresentation: React.FC<{
+  hook: Act1Hook;
+  product: Act2Product;
+  climax: Act3Climax;
+  brand?: BrandConfig;
+  act1End: number;
+  act2Start: number;
+  act2End: number;
+  act3Start: number;
+  maxEndFrame: number;
+  theme: Theme;
+}> = ({ hook, product, climax, brand, act1End, act2Start, act2End, act3Start, theme }) => {
+  const frame = useCurrentFrame();
+  const { fps, width, height } = useVideoConfig();
+  const isPortrait = height > width;
+
+  // ACT 1: Floating iOS Push Notification Banner & Greeting
+  if (frame <= act1End) {
+    const springNotif = spring({ frame: frame - 6, fps, config: { mass: 0.5, stiffness: 140, damping: 14 } });
+    const springTitle = spring({ frame: frame - 20, fps, config: { mass: 0.7, stiffness: 110, damping: 14 } });
+
+    return (
+      <AbsoluteFill style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: isPortrait ? '0 36px' : '0 80px' }}>
+        {/* Floating iOS Notification */}
+        <div style={{ transform: `translateY(${(1 - Math.max(0, springNotif)) * -80}px)`, opacity: Math.min(1, springNotif), padding: isPortrait ? '12px 20px' : '14px 24px', borderRadius: 24, background: 'rgba(28, 28, 36, 0.85)', border: '1px solid rgba(255,255,255,0.15)', backdropFilter: 'blur(20px)', boxShadow: '0 20px 40px rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', gap: 14, marginBottom: isPortrait ? 32 : 44, maxWidth: isPortrait ? 520 : undefined }}>
+          <div style={{ width: 36, height: 36, borderRadius: 10, background: theme.primary, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, color: '#ffffff', fontWeight: 900, flexShrink: 0 }}>
+            {brand?.name ? brand.name[0] : 'F'}
+          </div>
+          <div style={{ textAlign: 'left' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 700, color: '#ffffff' }}>
+              <span>{brand?.name || 'FocusFlow'}</span>
+              <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', fontWeight: 400 }}>NOW</span>
+            </div>
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.75)', marginTop: 2 }}>
+              ⚡ Daily flow session active · Zero distractions
+            </div>
+          </div>
+        </div>
+
+        <div style={{ opacity: Math.min(1, springTitle), transform: `scale(${Math.max(0.85, springTitle)})` }}>
+          <h1 style={{ fontFamily: '"Space Grotesk", sans-serif', fontSize: isPortrait ? 48 : 68, fontWeight: 900, letterSpacing: '-2px', color: '#ffffff', maxWidth: isPortrait ? 840 : 960, margin: isPortrait ? '0 auto 14px auto' : '0 auto 20px auto', lineHeight: 1.2 }}>
+            {hook.headline}
+          </h1>
+          <p style={{ fontSize: isPortrait ? 18 : 22, color: 'rgba(255,255,255,0.65)', maxWidth: isPortrait ? 720 : 680, margin: '0 auto' }}>
+            {hook.subheadline}
+          </p>
+        </div>
+      </AbsoluteFill>
+    );
+  }
+
+  // ACT 2: 3D Smartphone Device Mockup
+  if (frame >= act2Start && frame <= act2End) {
+    const actFrame = frame - act2Start;
+    const springPhone = spring({ frame: actFrame, fps, config: { mass: 0.8, stiffness: 90, damping: 14 } });
+    const tiltPhone = Math.sin(actFrame * 0.04) * 3;
+    const progressOffset = interpolate(actFrame, [15, 60], [280, 70], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+    const phoneScale = isPortrait ? 1.12 : 0.95;
+
+    return (
+      <AbsoluteFill style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', perspective: 1400 }}>
+        {/* Central Smartphone Frame */}
+        <div style={{ width: 400, height: 720, borderRadius: 52, background: 'radial-gradient(ellipse at 50% 0%, #1a1730 0%, #0d0b17 55%, #06050a 100%)', border: '3.5px solid rgba(255, 255, 255, 0.25)', boxShadow: `0 40px 100px -10px ${theme.primary}50, 0 35px 80px rgba(0,0,0,0.95)`, transform: `scale(${Math.max(0.8, springPhone) * phoneScale}) rotateX(8deg) rotateY(${tiltPhone - 10}deg)`, overflow: 'hidden', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+          {/* Dynamic Island Notch */}
+          <div style={{ width: 120, height: 28, borderRadius: 20, background: '#000000', margin: '14px auto 18px auto', border: '1px solid rgba(255,255,255,0.15)' }} />
+
+          {/* Device Screen Content */}
+          <div style={{ padding: '0 24px', flex: 1, display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {/* Circular Progress Ring Hero Card */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 20, padding: '20px 22px', borderRadius: 24, background: 'linear-gradient(135deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.06) 100%)', border: '1.5px solid rgba(255,255,255,0.22)', boxShadow: '0 16px 36px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,255,255,0.25)', backdropFilter: 'blur(24px)' }}>
+              <svg width="84" height="84" viewBox="0 0 100 100" style={{ shrink: 0 } as any}>
+                <circle cx="50" cy="50" r="40" stroke="rgba(255,255,255,0.18)" strokeWidth="10" fill="none" />
+                <circle cx="50" cy="50" r="40" stroke={theme.primary} strokeWidth="10" fill="none" strokeDasharray="260" strokeDashoffset={progressOffset} strokeLinecap="round" transform="rotate(-90 50 50)" style={{ filter: `drop-shadow(0 0 10px ${theme.primary})` }} />
+              </svg>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: 32, fontWeight: 900, color: '#ffffff', letterSpacing: '-0.5px', lineHeight: 1.1 }}>{product.metric?.value || '2.4 hrs'}</div>
+                <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.9)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', marginTop: 4 }}>{product.metric?.change || 'Daily Saved'}</div>
+              </div>
+            </div>
+
+            {/* Task Checklist Items */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {(product.features || ['Deep Focus Engine', 'Autonomous Scheduler', 'Offline Cloud Sync']).map((feat, idx) => (
+                <div key={idx} style={{ padding: '16px 18px', borderRadius: 20, background: 'linear-gradient(135deg, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0.06) 100%)', border: '1.5px solid rgba(255,255,255,0.2)', boxShadow: '0 8px 24px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.22)', backdropFilter: 'blur(20px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                    <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'linear-gradient(135deg, #10b981, #059669)', boxShadow: '0 2px 10px rgba(16, 185, 129, 0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 900, color: '#ffffff', flexShrink: 0 }}>✓</div>
+                    <div>
+                      <div style={{ fontSize: 15, fontWeight: 700, color: '#ffffff', letterSpacing: '-0.2px' }}>{feat}</div>
+                      <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', fontWeight: 500, marginTop: 2 }}>{idx === 0 ? 'Verified & Active' : idx === 1 ? 'Real-time cloud sync' : 'Autonomous scheduler'}</div>
+                    </div>
+                  </div>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.7)', background: 'rgba(255,255,255,0.1)', padding: '4px 10px', borderRadius: 10 }}>Done</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Live Session Status Bar */}
+            <div style={{ marginTop: 'auto', marginBottom: 4, padding: '14px 18px', borderRadius: 18, background: `linear-gradient(135deg, ${theme.primary}40, ${theme.accent}25)`, border: `1.5px solid ${theme.primary}80`, boxShadow: `0 10px 25px ${theme.primary}30`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#34d399', boxShadow: '0 0 10px #34d399' }} />
+                <span style={{ fontSize: 13, fontWeight: 700, color: '#ffffff' }}>Active Focus Session</span>
+              </div>
+              <span style={{ fontSize: 11, fontWeight: 800, color: '#ffffff', background: theme.primary, padding: '3px 10px', borderRadius: 10, letterSpacing: '0.5px' }}>LIVE</span>
+            </div>
+
+            {/* iOS Bottom Indicator */}
+            <div style={{ width: 130, height: 4, borderRadius: 10, background: 'rgba(255,255,255,0.5)', margin: '0 auto 10px auto' }} />
+          </div>
+        </div>
+      </AbsoluteFill>
+    );
+  }
+
+  // ACT 3: App Store Showcase & Download Pill
+  if (frame >= act3Start) {
+    const actFrame = frame - act3Start;
+    const springShowcase = spring({ frame: actFrame, fps, config: { mass: 0.6, stiffness: 120, damping: 13 } });
+
+    return (
+      <AbsoluteFill style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: isPortrait ? '0 36px' : '0 80px' }}>
+        {/* App Squircle Icon */}
+        <div style={{ width: isPortrait ? 76 : 88, height: isPortrait ? 76 : 88, borderRadius: 22, background: `linear-gradient(135deg, ${theme.primary}, ${theme.accent})`, boxShadow: `0 20px 50px ${theme.primary}50`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: isPortrait ? 38 : 44, color: '#ffffff', fontWeight: 900, marginBottom: isPortrait ? 20 : 28, transform: `scale(${Math.max(0.8, springShowcase)})` }}>
+          {brand?.name ? brand.name[0] : 'F'}
+        </div>
+
+        <h1 style={{ fontFamily: '"Space Grotesk", sans-serif', fontSize: isPortrait ? 64 : 92, fontWeight: 900, letterSpacing: '-2px', color: '#ffffff', margin: '0 0 14px 0' }}>
+          {brand?.name || 'FOCUSFLOW'}
+        </h1>
+
+        <div style={{ fontSize: isPortrait ? 13 : 15, fontWeight: 700, color: '#fbbf24', letterSpacing: '1px', marginBottom: isPortrait ? 14 : 20 }}>
+          ★★★★★ 4.9 · 120,000+ USER RATINGS
+        </div>
+
+        <p style={{ fontSize: isPortrait ? 18 : 24, color: 'rgba(255,255,255,0.8)', maxWidth: isPortrait ? 720 : 680, margin: isPortrait ? '0 0 28px 0' : '0 0 36px 0' }}>
+          {brand?.tagline}
+        </p>
+
+        {/* Apple Store Download Pill */}
+        <div style={{ padding: isPortrait ? '14px 36px' : '16px 42px', borderRadius: 100, background: '#ffffff', color: '#000000', fontSize: isPortrait ? 15 : 16, fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: 10, boxShadow: '0 15px 40px rgba(255,255,255,0.2)' }}>
+          <span></span>
+          <span>Download on the App Store</span>
+        </div>
+      </AbsoluteFill>
+    );
+  }
+
+  return null;
+};
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ARCHETYPE 4: Fintech Cyber Grid & Telemetry (Stripe / Modern Terminal)
+// ══════════════════════════════════════════════════════════════════════════════
+
+const FintechGridPresentation: React.FC<{
+  hook: Act1Hook;
+  product: Act2Product;
+  climax: Act3Climax;
+  brand?: BrandConfig;
+  act1End: number;
+  act2Start: number;
+  act2End: number;
+  act3Start: number;
+  maxEndFrame: number;
+  theme: Theme;
+}> = ({ hook, product, climax, brand, act1End, act2Start, act2End, act3Start, theme }) => {
+  const frame = useCurrentFrame();
+  const { fps, width, height } = useVideoConfig();
+  const isPortrait = height > width;
+
+  // ACT 1: Monospace Terminal Boot Sequence & Laser Scan
+  if (frame <= act1End) {
+    const scanY = interpolate(frame, [0, act1End], [0, 100], { extrapolateRight: 'clamp' });
+    const springHook = spring({ frame: frame - 12, fps, config: { mass: 0.6, stiffness: 120, damping: 14 } });
+
+    return (
+      <AbsoluteFill style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: isPortrait ? '0 36px' : '0 80px' }}>
+        {/* Vertical Scanning Green Line */}
+        <div style={{ position: 'absolute', left: 0, right: 0, top: `${scanY}%`, height: 2, background: 'linear-gradient(90deg, transparent, #34d399, transparent)', boxShadow: '0 0 20px #34d399', pointerEvents: 'none' }} />
+
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: isPortrait ? '5px 14px' : '6px 18px', borderRadius: 100, background: 'rgba(52, 211, 153, 0.1)', border: '1px solid rgba(52, 211, 153, 0.3)', color: '#34d399', fontFamily: 'monospace', fontSize: isPortrait ? 11 : 12, fontWeight: 700, letterSpacing: '1.5px', marginBottom: isPortrait ? 20 : 28 }}>
+          <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#34d399' }} />
+          <span>[QUANTUM ENCRYPTION // ZERO KNOWLEDGE PROTOCOL]</span>
+        </div>
+
+        <div style={{ opacity: Math.min(1, springHook), transform: `translateY(${(1 - Math.max(0, springHook)) * 25}px)` }}>
+          <h1 style={{ fontFamily: '"Space Grotesk", sans-serif', fontSize: isPortrait ? 48 : 72, fontWeight: 900, letterSpacing: '-2px', color: '#ffffff', maxWidth: isPortrait ? 840 : 1020, margin: isPortrait ? '0 auto 14px auto' : '0 auto 20px auto', lineHeight: 1.15 }}>
+            {hook.headline}
+          </h1>
+          <p style={{ fontFamily: 'monospace', fontSize: isPortrait ? 16 : 20, color: 'rgba(255,255,255,0.65)', maxWidth: isPortrait ? 720 : 740, margin: '0 auto' }}>
+            &gt; {hook.subheadline}
+          </p>
+        </div>
+      </AbsoluteFill>
+    );
+  }
+
+  // ACT 2: 3D Holographic Payment Card & Live Ledger Feed
+  if (frame >= act2Start && frame <= act2End) {
+    const actFrame = frame - act2Start;
+    const springCard = spring({ frame: actFrame, fps, config: { mass: 0.8, stiffness: 95, damping: 14 } });
+    const cardTiltY = (isPortrait ? 8 : 16) + Math.sin(actFrame * 0.04) * 3;
+    const cardWidth = isPortrait ? Math.min(460, width - 80) : 480;
+
+    return (
+      <AbsoluteFill style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', perspective: 1400, padding: isPortrait ? '0 36px' : '0 80px' }}>
+        <div style={{ width: isPortrait ? Math.min(840, width - 60) : 1100, maxWidth: '100%', display: isPortrait ? 'flex' : 'grid', flexDirection: isPortrait ? 'column' : undefined, gridTemplateColumns: isPortrait ? undefined : '1.2fr 1fr', gap: isPortrait ? 24 : 48, alignItems: 'center', justifyContent: 'center' }}>
+          {/* Left: 3D Metallic Credit Card */}
+          <div style={{ width: cardWidth, height: isPortrait ? 250 : 280, maxWidth: '100%', borderRadius: 24, background: 'linear-gradient(135deg, rgba(30, 27, 46, 0.95), rgba(12, 10, 22, 0.98))', border: '1px solid rgba(255,255,255,0.18)', boxShadow: `0 30px 80px ${theme.primary}35, 0 15px 40px rgba(0,0,0,0.8)`, transform: `scale(${Math.max(0.8, springCard)}) rotateX(-8deg) rotateY(${cardTiltY}deg)`, padding: isPortrait ? 24 : 32, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative', overflow: 'hidden' }}>
+            {/* Gold Chip */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ width: 48, height: 36, borderRadius: 8, background: 'linear-gradient(135deg, #fbbf24, #d97706)', border: '1px solid #f59e0b' }} />
+              <span style={{ fontFamily: 'monospace', fontSize: 18, color: 'rgba(255,255,255,0.6)' }}>)))</span>
+            </div>
+
+            {/* Embossed Card Number */}
+            <div style={{ fontFamily: 'monospace', fontSize: isPortrait ? 20 : 24, letterSpacing: isPortrait ? '3px' : '4px', color: '#ffffff', textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
+              •••• •••• •••• 9024
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+              <div>
+                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)', fontFamily: 'monospace' }}>CARDHOLDER</div>
+                <div style={{ fontSize: isPortrait ? 14 : 16, fontWeight: 700, color: '#ffffff', letterSpacing: '1px' }}>{brand?.name || 'VOLTPAY GLOBAL'}</div>
+              </div>
+              <div style={{ fontSize: 12, color: '#34d399', fontFamily: 'monospace', fontWeight: 700 }}>VERIFIED ✓</div>
+            </div>
+          </div>
+
+          {/* Right: Live Floating Transaction Ticker */}
+          <div style={{ width: isPortrait ? Math.min(460, width - 80) : '100%', maxWidth: '100%', display: 'flex', flexDirection: 'column', gap: isPortrait ? 10 : 14 }}>
+            <div style={{ padding: isPortrait ? '16px 20px' : '20px 24px', borderRadius: 16, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <div style={{ fontSize: 12, fontFamily: 'monospace', color: '#34d399', letterSpacing: '1px' }}>● LIVE SETTLED // 0.02s</div>
+              <div style={{ fontSize: isPortrait ? 36 : 44, fontWeight: 900, color: '#ffffff', margin: '4px 0' }}>{product.metric?.value || '+$12,450.00'}</div>
+              <div style={{ fontSize: isPortrait ? 12 : 13, color: 'rgba(255,255,255,0.6)' }}>{product.metric?.change || 'Automated Instant Liquidity'}</div>
+            </div>
+
+            <div style={{ padding: isPortrait ? '12px 16px' : '16px 20px', borderRadius: 14, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: isPortrait ? 13 : 14, fontWeight: 600, color: '#ffffff' }}>Global Multi-Currency Rails</span>
+              <span style={{ fontSize: isPortrait ? 11 : 12, color: '#38bdf8', fontFamily: 'monospace' }}>120+ COUNTRIES</span>
+            </div>
+          </div>
+        </div>
+      </AbsoluteFill>
+    );
+  }
+
+  // ACT 3: Global Checkout Lock & CTA
+  if (frame >= act3Start) {
+    const actFrame = frame - act3Start;
+    const springTitle = spring({ frame: actFrame, fps, config: { mass: 0.6, stiffness: 120, damping: 13 } });
+
+    return (
+      <AbsoluteFill style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: isPortrait ? '0 36px' : '0 80px' }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: isPortrait ? '6px 18px' : '8px 22px', borderRadius: 100, background: 'rgba(52, 211, 153, 0.1)', border: '1px solid #34d399', color: '#34d399', fontSize: isPortrait ? 11 : 13, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: isPortrait ? 20 : 28 }}>
+          <span>🔒</span>
+          <span>GLOBAL PAYMENT CLEARING LIVE</span>
+        </div>
+
+        <h1 style={{ fontFamily: '"Space Grotesk", sans-serif', fontSize: isPortrait ? 68 : 104, fontWeight: 900, letterSpacing: '-3px', color: '#ffffff', margin: isPortrait ? '0 0 14px 0' : '0 0 20px 0', maxWidth: isPortrait ? 880 : 1200, textShadow: `0 0 60px ${theme.primary}60` }}>
+          {brand?.name || 'VOLTPAY'}
+        </h1>
+
+        <p style={{ fontSize: isPortrait ? 20 : 26, fontWeight: 500, color: 'rgba(255,255,255,0.85)', maxWidth: isPortrait ? 760 : 760, margin: isPortrait ? '0 0 28px 0' : '0 0 40px 0' }}>
+          {brand?.tagline}
+        </p>
+
+        <div style={{ padding: isPortrait ? '15px 36px' : '18px 48px', borderRadius: 100, background: `linear-gradient(135deg, ${theme.primary}, ${theme.accent})`, color: '#ffffff', fontSize: isPortrait ? 16 : 18, fontWeight: 800, letterSpacing: '0.5px', boxShadow: `0 15px 40px ${theme.primary}60` }}>
+          {brand?.ctaText || 'Launch Instant Checkout →'}
+        </div>
+      </AbsoluteFill>
+    );
+  }
+
+  return null;
+};
+
 
 // Helper to calculate luminance of any hex color
 const getHexLuminance = (hex: string | undefined): number => {
@@ -995,17 +1384,85 @@ export const RemotionVideo: React.FC<{ config?: VideoConfig }> = ({ config: prop
         <AmbientGlow />
         <MicroGrid />
 
-        {/* 3-Act SaaS Launch Presentation */}
-        <Act1HookView hook={hookData} brand={activeConfig.brand} actEnd={act1End} />
+        {/* Render Chosen Visual Design Archetype */}
+        {(() => {
+          const brandName = (activeConfig.brand?.name || '').toLowerCase();
+          const brandCat = (activeConfig.brand?.categoryBadge || '').toLowerCase();
+          const activeDesign: 'saas-window' | 'kinetic-punch' | 'mobile-showcase' | 'fintech-grid' =
+            activeConfig.templateDesign ||
+            (brandName.includes('volt') || brandCat.includes('fintech')
+              ? 'fintech-grid'
+              : brandName.includes('focus') || brandCat.includes('mobile') || brandCat.includes('app')
+                ? 'mobile-showcase'
+                : brandName.includes('hyper') || brandCat.includes('speed') || brandCat.includes('performance')
+                  ? 'kinetic-punch'
+                  : 'saas-window');
 
-        <Act2ProductView
-          product={productData}
-          brand={activeConfig.brand}
-          actStart={act2Start}
-          actEnd={act2End}
-        />
+          if (activeDesign === 'kinetic-punch') {
+            return (
+              <KineticPunchPresentation
+                hook={hookData}
+                product={productData}
+                climax={climaxData}
+                brand={activeConfig.brand}
+                act1End={act1End}
+                act2Start={act2Start}
+                act2End={act2End}
+                act3Start={act3Start}
+                maxEndFrame={maxEndFrame}
+                theme={theme}
+              />
+            );
+          }
 
-        <Act3ClimaxView brand={activeConfig.brand} climax={climaxData} actStart={act3Start} />
+          if (activeDesign === 'mobile-showcase') {
+            return (
+              <MobileShowcasePresentation
+                hook={hookData}
+                product={productData}
+                climax={climaxData}
+                brand={activeConfig.brand}
+                act1End={act1End}
+                act2Start={act2Start}
+                act2End={act2End}
+                act3Start={act3Start}
+                maxEndFrame={maxEndFrame}
+                theme={theme}
+              />
+            );
+          }
+
+          if (activeDesign === 'fintech-grid') {
+            return (
+              <FintechGridPresentation
+                hook={hookData}
+                product={productData}
+                climax={climaxData}
+                brand={activeConfig.brand}
+                act1End={act1End}
+                act2Start={act2Start}
+                act2End={act2End}
+                act3Start={act3Start}
+                maxEndFrame={maxEndFrame}
+                theme={theme}
+              />
+            );
+          }
+
+          /* Archetype 1 Default: 3D Perspective SaaS Browser Window */
+          return (
+            <>
+              <Act1HookView hook={hookData} brand={activeConfig.brand} actEnd={act1End} />
+              <Act2ProductView
+                product={productData}
+                brand={activeConfig.brand}
+                actStart={act2Start}
+                actEnd={act2End}
+              />
+              <Act3ClimaxView brand={activeConfig.brand} climax={climaxData} actStart={act3Start} />
+            </>
+          );
+        })()}
 
         {/* Post-Processing Texture */}
         <FilmGrain />

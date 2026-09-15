@@ -41,33 +41,13 @@ export type ResolutionPreset = keyof typeof RESOLUTION_PRESETS;
 export const STYLE_PRESETS = ['cinematic', 'minimal', 'corporate'] as const;
 export type StylePreset = (typeof STYLE_PRESETS)[number];
 
-export const AUDIO_PRESETS = {
-  auto: { label: 'Auto (Style Matched)' },
-  'cinematic-ambient': { label: 'Cinematic Ambient (Ethereal & Deep)' },
-  'tech-pulse': { label: 'Tech Pulse (Modern Electronic)' },
-  'minimal-warmth': { label: 'Minimal Warmth (Organic Acoustic)' },
-  none: { label: 'Mute (No Audio)' },
-} as const;
-
-export type AudioPreset = keyof typeof AUDIO_PRESETS;
-
 /** Default video settings */
 export const DEFAULT_OPTIONS = {
   duration: '10s' as DurationPreset,
   resolution: 'landscape' as ResolutionPreset,
   style: 'cinematic' as StylePreset,
-  audio: 'auto' as AudioPreset,
 };
 
 /** FPS for all renders */
 export const VIDEO_FPS = 30;
 
-// ─── Example Prompts ─────────────────────────────────────────────────────────
-
-export const EXAMPLE_PROMPTS = [
-  'Cursor: AI-powered code editor with autonomous agents that code at lightspeed',
-  'Linear: Streamlined issue tracking and project management for modern engineering teams',
-  'Supabase: The open source Firebase alternative with sub-millisecond Postgres & Edge APIs',
-  'Raycast: Ultra-fast macOS launcher with instant keyboard shortcuts and AI workflows',
-  'Resend: The developer-first transactional email API built for modern React teams',
-];
