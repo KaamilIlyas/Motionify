@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" fill="none">
+  <defs>
+    <linearGradient id="m-border-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1" />
+      <stop offset="50%" stop-color="#818cf8" />
+      <stop offset="100%" stop-color="#c084fc" />
+    </linearGradient>
+    <linearGradient id="m-bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f0f18" />
+      <stop offset="100%" stop-color="#09090d" />
+    </linearGradient>
+    <linearGradient id="m-play-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#e0e7ff" />
+    </linearGradient>
+  </defs>
+
+  <!-- Base Squircle Container -->
+  <rect x="1.5" y="1.5" width="29" height="29" rx="8" fill="url(#m-bg-grad)" stroke="url(#m-border-grad)" stroke-width="2" />
+
+  <!-- Ambient Glow Inside -->
+  <rect x="3" y="3" width="26" height="26" rx="6.5" fill="#6366f1" fill-opacity="0.08" />
+
+  <!-- Viewport / Frame Accent Border -->
+  <rect x="6.5" y="6.5" width="19" height="19" rx="4" stroke="#818cf8" stroke-opacity="0.4" stroke-width="1.2" />
+
+  <!-- Play Glyph -->
+  <path d="M13 11C13 10.3 13.78 9.87 14.38 10.22L20.88 14.5C21.44 14.83 21.44 15.67 20.88 16L14.38 20.28C13.78 20.63 13 20.2 13 19.5V11Z" fill="url(#m-play-grad)" />
+</svg>

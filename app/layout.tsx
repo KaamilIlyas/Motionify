@@ -13,6 +13,13 @@ export const metadata: Metadata = {
   description:
     "Type a prompt, get a professional motion graphics video. Powered by AI and Remotion.",
   keywords: ["motion graphics", "AI video", "remotion", "video generator", "AI"],
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico" },
+    ],
+    apple: "/icon.svg",
+  },
 };
 
 export default function RootLayout({

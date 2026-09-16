@@ -1,118 +1,120 @@
-## 1. Project Overview (The Elevator Pitch)
+## 1. Overview
 
-> **"Motionify is a full-stack web application that generates professional, agency-quality 10-second SaaS launch videos from text inputs. Instead of using slow and unpredictable generative diffusion video models, Motionify uses an AI-to-Code architecture: an LLM crafts a structured 3-act storyboard, which dynamically drives programmatic React motion graphics rendered frame-by-frame into crisp 1080p 60fps MP4 videos using Remotion."**
+**Motionify** is a full-stack web application that turns text prompts into crisp, 10-second 1080p 60fps SaaS launch videos.
 
----
+### The Core Concept: AI-to-Code
+Traditional AI video generators (like Sora or Runway) create blurry text, distorted UI layouts, and take a long time to generate. 
 
-## 2. Technologies Used: What, How & Why
-
-### A. Next.js 16 (App Router) & React 19
-- **What it is:** The modern full-stack React framework.
-- **How we used it:** 
-  - Powers both the client-side studio interface and backend API routes (`/api/generate`, `/api/status/[jobId]`, `/api/download/[jobId]`).
-  - Implements job tracking, rate limiting, and an in-memory queue to manage concurrent render jobs without crashing the server.
-- **Why we chose it:** Unified codebase for both UI and server-side video rendering orchestration, fast page loads, and native TypeScript support.
+Motionify solves this with a two-part system:
+1. **AI (Gemini) handles the script:** It writes a structured 3-act story (Hook, Product Proof, Call to Action) in JSON.
+2. **Remotion handles the rendering:** It runs React components frame-by-frame inside headless Chromium and compiles a razor-sharp MP4 video using FFmpeg.
 
 ---
 
-### B. Remotion (`@remotion/renderer` & `@remotion/bundler`)
-- **What it is:** A specialized framework for creating real videos programmatically using React and web standards (CSS, SVG, HTML).
-- **How we used it:** 
-  - Remotion takes a React component ([`lib/template.tsx`](./lib/template.tsx)) and runs it inside a headless Chromium browser.
-  - It steps through each frame (60 frames per second = 600 frames for 10 seconds), takes snapshots, and uses an embedded FFmpeg encoder to compile an H.264 MP4 file.
-- **Why we chose it:**
-  - **Pixel-perfect quality:** Text, metrics, and logos remain razor-sharp with no blurry AI artifacts.
-  - **Deterministic & Controllable:** Traditional AI video models often hallucinate distorted text or warped UI cards. Remotion guarantees crisp typography and predictable animation curves.
-  - **Cost & Speed:** Renders on standard CPUs in seconds without expensive GPU cloud instances.
-
----
-
-### C. Google Gemini API (`gemini-2.5-flash`) & Fallback AI Cascade
-- **What it is:** High-speed, multimodal large language model.
-- **How we used it:**
-  - Converts user inputs (product name, domain, tagline, and hero metric) into a strictly validated 3-Act JSON storyboard:
-    - **Act 1 (0s–3s): Hook** — Provocative problem statement and animated headline.
-    - **Act 2 (3s–7s): Product Proof** — Visual product showcase, dynamic metric counters, and feature tags.
-    - **Act 3 (7s–10s): Climax & CTA** — Final brand value proposition, status badge, and call to action.
-  - Includes a fallback system to Groq or OpenRouter if the primary API is unavailable.
-- **Why we chose it:** Fast latency (<1 second response time) and consistent adherence to strict JSON schemas.
-
----
-
-### D. 4 Distinct Visual Design Archetypes (Pure CSS & SVG 3D)
-- **What it is:** 4 tailored design templates that provide visual variety instead of repeating one generic layout:
-  1. **AI Copilot (`saas-window`):** 3D perspective browser window with macOS traffic lights, dynamic metric badge (`+340%`), animated SVG sparkline chart, and live terminal execution bar.
-  2. **Speed Engine (`kinetic-punch`):** High-energy kinetic typography cuts, holographic radar circle, laser sweeps, and stacked velocity benchmark cards.
-  3. **Mobile App (`mobile-showcase`):** 3D smartphone frame with Dynamic Island notch, floating iOS notification banner, circular progress ring (`88% Completed`), and App Store rating badge.
-  4. **Fintech Checkout (`fintech-grid`):** Cyber telemetry grid, 3D metallic credit card with gold microchip & contactless glyph, and live settlement ledger (`+$12.4M`).
-- **How we used it:** Built with pure CSS 3D transforms (`perspective`, `rotateX`, `rotateY`), SVG gradients, and Remotion mathematical spring physics (`spring()`, `interpolate()`).
-- **Why we chose it:**
-  - WebGL / Three.js canvases often fail or crash in headless server-side bundlers. Pure CSS & SVG 3D transforms are 100% reliable, render instantly, and consume minimal memory.
-
----
-
-### E. Tailwind CSS v4 & Framer Motion
-- **What it is:** Utility-first styling engine and React animation library.
-- **How we used it:** 
-  - Builds a responsive, dark-mode studio UI styled to fit modern developer tool aesthetics.
-  - Powers interactive tab switches, real-time pipeline progress bars, and mobile responsiveness down to 320px screens.
-- **Why we chose it:** Rapid component styling with minimal CSS bundle size and smooth micro-interactions.
-
----
-
-## 3. Step-by-Step Architecture Pipeline
+## 2. System Pipeline (How It Works)
 
 ```
-1. USER INPUT
-   User enters product details or selects 1 of 4 Brand Presets.
-        │
-        ▼
-2. API & STORY SYNTHESIS (/api/generate)
-   Next.js API calls Gemini API with a system prompt and JSON Schema.
-   LLM returns structured 3-Act JSON storyboard.
-        │
-        ▼
-3. QUEUE & WORKSPACE SETUP (lib/job-store.ts)
-   Job created with a unique UUID.
-   Temp workspace created at /tmp/motionify/<jobId>.
-        │
-        ▼
-4. REMOTION HEADLESS RENDER (lib/renderer.ts)
-   Remotion bundles the React composition into headless Chromium.
-   Chromium steps through 600 frames @ 60fps.
-   FFmpeg encodes the frames into an H.264 MP4 file.
-        │
-        ▼
-5. REAL-TIME POLLING & INSTANT PLAYBACK
-   Client polls /api/status/<jobId> every 2 seconds.
-   When status = 'completed', client displays the video using hardware-accelerated
-   native HTML5 <video> element with instant download.
+[User Prompt] 
+      │
+      ▼
+1. Story Generation (app/api/generate/route.ts + lib/gemini.ts)
+   Gemini creates a 3-act storyboard JSON (Hook, Proof, CTA).
+      │
+      ▼
+2. Job Queue (lib/job-store.ts)
+   Sets up a temp folder in /tmp/motionify/<jobId> with config.json and template.tsx.
+   Limits concurrent renders so the server does not overload.
+      │
+      ▼
+3. Headless Rendering (lib/renderer.ts)
+   Remotion bundles the React code and runs it in headless Chromium.
+   Steps through 600 frames (10 seconds @ 60fps).
+      │
+      ▼
+4. Video Encoding (FFmpeg)
+   Compiles raw frames into a 1080p H.264 MP4 file.
+      │
+      ▼
+5. Instant Playback & Download (app/page.tsx + app/api/download/[jobId]/route.ts)
+   The browser polls the status and streams the finished MP4 video.
 ```
 
 ---
 
-## 4. Key Engineering Challenges Solved
+## 3. Tech Stack & Why It Was Chosen
 
-### Challenge 1: Traditional AI Video vs. Programmatic Video
-- **Problem:** Generative video models (e.g. Runway, Sora, Pika) are computationally expensive, slow to generate, and consistently produce blurry, illegible text and warped UI mockups.
-- **Solution:** Adopted a hybrid architecture where the AI handles the **creative storytelling** (generating copy, metrics, and pacing), while **Remotion handles deterministic rendering** (ensuring razor-sharp typography, perfect alignments, and 60fps smooth animations).
-
-### Challenge 2: Eliminating Browser Lag and Canvas Freezing
-- **Problem:** Running live Remotion canvas player simulations in the client browser during rendering caused heavy CPU throttling, stutter, and memory spikes.
-- **Solution:** Streamlined the client pipeline: during generation, the user sees a lightweight progress tracker with live percentage updates. Once rendering completes, the app serves the rendered MP4 directly inside an optimized HTML5 video element with hardware acceleration.
-
-### Challenge 3: Reliable 3D Graphics Without WebGL Failures
-- **Problem:** 3D libraries like `@remotion/three` or Three.js often encounter WebGL context loss or missing canvas bindings in headless Linux/Docker environments.
-- **Solution:** Designed 3D visual assets (browser perspective, smartphone casing, metallic credit card) using mathematical CSS 3D transforms, SVG vector geometry, and Remotion spring physics. This guarantees zero render crashes and renders up to 4x faster.
+| Technology | Role | Why It Was Chosen |
+| :--- | :--- | :--- |
+| **Next.js 16 & React 19** | Full-stack app & APIs | Single codebase for the studio interface, background jobs, and API routes. |
+| **Remotion** | Programmatic video engine | Renders React components as real video. Guarantees sharp text and smooth 60fps motion. |
+| **FFmpeg** | Video encoding | Encodes browser frames directly into standard H.264 MP4 files. |
+| **Google Gemini 2.5 Flash** | Narrative storyboard generator | Fast response (<2 seconds) and strictly adheres to JSON schemas. Has fallbacks to Groq/OpenRouter. |
+| **Pure CSS 3D & SVG** | Visual mockups | Browser windows, phone mockups, and cards are styled with CSS 3D transforms instead of Three.js to avoid headless WebGL crashes. |
+| **Tailwind CSS v4** | Studio UI | Fast, lightweight styling for the dark-mode studio interface. |
 
 ---
 
-## 5. Resume & Portfolio Bullet Points
+## 4. The 4 Visual Archetypes
 
-Here are bullet points you can copy directly to your resume or portfolio:
+Motionify includes 4 built-in design styles inside `lib/template.tsx`:
 
-- **Full-Stack Architecture:** Built an automated motion graphics generation platform using **Next.js 16 (App Router)**, **React 19**, and **TypeScript**, orchestrating an end-to-end pipeline from text input to MP4 output.
-- **Programmatic Video Pipeline:** Implemented **Remotion** with headless Chromium and FFmpeg to render 1080p 60fps videos frame-by-frame on the server in under 20 seconds.
-- **AI-Driven Storyboarding:** Integrated **Google Gemini API** with structured JSON schemas and fallback providers (Groq/OpenRouter) to synthesize 3-act commercial marketing copy (Hook, Proof, Climax).
-- **Custom Design Archetypes:** Engineered 4 distinct commercial visual themes (3D Web Window, Kinetic Typography, 3D Smartphone Frame, and Fintech Card) using pure CSS 3D perspective and SVG motion graphics.
-- **Performance & Reliability:** Designed an in-memory job queue with concurrency limits and hardware-accelerated client playback, eliminating canvas lag and guaranteeing 100% render success.
+1. **AI Copilot (`saas-window`):**
+   - 3D tilted browser window with macOS buttons.
+   - Dynamic metric badge (e.g. `+340%`), animated sparkline chart, and terminal bar.
+2. **Speed Engine (`kinetic-punch`):**
+   - High-energy kinetic typography cuts.
+   - Holographic radar circle, laser sweeps, and speed benchmark cards.
+3. **Mobile App (`mobile-showcase`):**
+   - 3D smartphone frame with Dynamic Island notch.
+   - Floating iOS notification banner, circular progress ring, and app rating badge.
+4. **Fintech Grid (`fintech-grid`):**
+   - Cyber grid background with perspective floor.
+   - 3D metallic credit card with gold chip, and live transaction ledger (`+$12.4M`).
+
+---
+
+## 5. Key Engineering Problems & Solutions
+
+### 1. Sharp Text vs. Blurry AI Video
+- **Problem:** AI diffusion models cannot generate clear UI cards or legible text.
+- **Solution:** AI only plans the story structure. React and Remotion draw all text and UI elements as clean vector code.
+
+### 2. Preventing Browser Stutter & Lag
+- **Problem:** Playing heavy animations inside the user's browser slows down their machine.
+- **Solution:** All heavy rendering happens on the server. The user only sees a lightweight progress bar, followed by the finished MP4 video via native hardware-accelerated playback.
+
+### 3. Avoiding WebGL Crashes in Headless Servers
+- **Problem:** 3D libraries (Three.js/WebGL) often crash in headless Docker and Linux servers without GPUs.
+- **Solution:** All 3D angles and cards are built using mathematical CSS 3D transforms (`perspective`, `rotateX`, `rotateY`) and SVGs, which work 100% reliably on standard CPUs.
+
+### 4. Server Resource Protection
+- **Problem:** Multiple video render jobs at the same time can run the server out of memory.
+- **Solution:** An in-memory queue (`lib/job-store.ts`) limits active renders to 2 at a time, buffering the rest and cleaning up temporary files after 10 minutes.
+
+---
+
+## 6. Project Structure
+
+```
+motionify-app/
+├── app/
+│   ├── api/generate/route.ts        # Starts video generation job
+│   ├── api/status/[jobId]/route.ts  # Checks job progress (0% to 100%)
+│   ├── api/download/[jobId]/route.ts# Streams completed MP4 file
+│   ├── layout.tsx                   # Page layout, fonts, and favicon
+│   ├── page.tsx                     # Main Studio UI
+│   ├── icon.svg                     # Custom SVG brand favicon
+│   └── favicon.ico                  # Fallback favicon
+├── components/
+│   ├── StudioHeader.tsx             # Navbar and brand logo
+│   ├── ArchetypeSelector.tsx        # Card selector for the 4 design styles
+│   ├── ProgressTracker.tsx          # Real-time render progress bar
+│   └── StudioMonitor.tsx            # Video preview and download buttons
+├── lib/
+│   ├── config.ts                    # Global settings (fps, duration, limits)
+│   ├── gemini.ts                    # Storyboard AI prompt & schema validation
+│   ├── job-store.ts                 # In-memory queue & rate limiter
+│   ├── renderer.ts                  # Remotion bundling & Chromium render loop
+│   └── template.tsx                 # React video template for the 4 archetypes
+└── guide.md                         # This architecture guide
+```
