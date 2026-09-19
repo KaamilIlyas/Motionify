@@ -2,6 +2,8 @@
 
 An AI-powered SaaS motion graphics engine. Generates 60fps Full HD commercial product launch videos from brand descriptions using Google Gemini for storyboarding and Remotion for programmatic video rendering.
 
+**Live Demo:** [https://motionify-graphics.vercel.app](https://motionify-graphics.vercel.app/)
+
 ## Features
 
 - **4 Design Archetypes**: `AI Copilot` (browser & terminal UI), `Speed Engine` (kinetic typography promo), `Mobile App` (3D smartphone frame), and `Fintech Checkout` (telemetry grid & metallic card).
