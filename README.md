@@ -49,4 +49,4 @@ An AI-powered SaaS motion graphics engine. Generates 60fps Full HD commercial pr
 
 ## License
 
-MIT\n
+MIT
